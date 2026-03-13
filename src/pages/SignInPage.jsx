@@ -1,19 +1,46 @@
 import React, { useState } from 'react';
 import { Mail, Lock, ArrowRight } from 'lucide-react';
+import { apiFetch } from '../utils/api';
 
 const SignInPage = ({ onSignIn, onNavigate }) => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState(null);
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
+        setError(null);
         setIsLoading(true);
-        // Simulate network request
-        setTimeout(() => {
+
+        try {
+            const { access_token } = await apiFetch('/api/auth/login', {
+                method: 'POST',
+                body: JSON.stringify({ email, password }),
+            });
+            onSignIn(access_token);
+        } catch (err) {
+            setError(err.message || 'Sign in failed');
+        } finally {
             setIsLoading(false);
-            onSignIn(); // Transition to the main app routing
-        }, 1500);
+        }
+    };
+
+    const handleRegister = async () => {
+        setError(null);
+        setIsLoading(true);
+
+        try {
+            const { access_token } = await apiFetch('/api/auth/register', {
+                method: 'POST',
+                body: JSON.stringify({ email, password }),
+            });
+            onSignIn(access_token);
+        } catch (err) {
+            setError(err.message || 'Sign up failed');
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     return (
@@ -37,6 +64,12 @@ const SignInPage = ({ onSignIn, onNavigate }) => {
                             <h1 className="text-3xl font-bold text-gray-900 dark:text-white tracking-tight mb-2">Welcome back</h1>
                             <p className="text-gray-500 dark:text-gray-400">Continue your journey of reflection.</p>
                         </div>
+
+                        {error && (
+                            <div className="mb-4 px-4 py-3 rounded-2xl bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-200 border border-red-100 dark:border-red-800">
+                                {error}
+                            </div>
+                        )}
 
                         <form onSubmit={handleSubmit} className="flex flex-col gap-5">
                             <div>
@@ -102,7 +135,7 @@ const SignInPage = ({ onSignIn, onNavigate }) => {
                     </div>
 
                     <p className="text-center mt-8 text-sm font-medium text-gray-500 dark:text-gray-400">
-                        Don't have an account? <a href="#" className="text-wellness-accent hover:text-wellness-accent-hover transition-colors ml-1">Sign up</a>
+                        Don't have an account? <button type="button" onClick={handleRegister} className="text-wellness-accent hover:text-wellness-accent-hover transition-colors ml-1">Sign up</button>
                     </p>
                 </div>
             </main>

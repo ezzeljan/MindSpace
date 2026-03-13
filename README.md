@@ -1,20 +1,58 @@
-<<<<<<< HEAD
-# React + Vite
-
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
-
-Currently, two official plugins are available:
-
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
-
-## React Compiler
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
-=======
 # MindSpace
->>>>>>> abbe119b781dbe6a2332526b968c783eb65c0c11
+
+MindSpace is a wellness companion built with React + Vite on the frontend, and an optional Python backend for persisting chat, mood, and reflection data.
+
+## 🚀 Running the frontend
+
+```bash
+# from the repo root
+npm install
+npm run dev
+```
+
+The frontend runs on http://localhost:5173 and proxies API requests to `http://localhost:8000/api`.
+
+## 🧠 Running the backend (Python)
+
+The backend is optional but enables persistence of chat history, mood logs, and reflections.
+
+### 1) Create a Python environment
+
+```bash
+cd backend
+python -m venv .venv
+# Windows PowerShell
+.\.venv\Scripts\Activate.ps1
+# macOS / Linux
+# source .venv/bin/activate
+```
+
+### 2) Install dependencies
+
+```bash
+pip install -r requirements.txt
+```
+
+### 3) Start the API server
+
+```bash
+uvicorn backend.api:app --reload --port 8000
+```
+
+### 4) (Optional) Open the Streamlit admin dashboard
+
+```bash
+streamlit run backend/streamlit_app.py
+```
+
+The streamlit app will start the backend automatically if it is not already running.
+
+## 🧩 How the frontend uses the backend
+
+- `/api/auth/login` for signing in and obtaining a session token
+- `/api/auth/register` for creating a new account
+- `/api/chat` for chat messages (requires authentication)
+- `/api/mood` for mood logging (requires authentication)
+- `/api/reflection` for journaling (requires authentication)
+
+The frontend is configured to proxy `/api/*` to `http://localhost:8000` when running in development mode.

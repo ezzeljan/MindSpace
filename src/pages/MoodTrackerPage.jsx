@@ -1,9 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Frown, Meh, Smile, CloudRain, Sun, Zap } from 'lucide-react';
+import { apiFetch } from '../utils/api';
 
-const MoodTrackerPage = () => {
+const MoodTrackerPage = ({ onUnauthorized }) => {
     const [selectedMood, setSelectedMood] = useState('Calm');
     const [showConfirmation, setShowConfirmation] = useState(false);
+    const [error, setError] = useState(null);
+    const [moodHistory, setMoodHistory] = useState([]);
 
     const moods = [
         { label: 'Very Sad', emoji: <CloudRain size={40} strokeWidth={1.5} />, color: 'bg-indigo-50 text-indigo-600 border-indigo-100' },
@@ -14,9 +17,44 @@ const MoodTrackerPage = () => {
         { label: 'Very Happy', emoji: <Zap size={40} strokeWidth={1.5} />, color: 'bg-yellow-50 text-yellow-600 border-yellow-100' },
     ];
 
-    const handleLogMood = () => {
-        setShowConfirmation(true);
-        setTimeout(() => setShowConfirmation(false), 3000);
+    useEffect(() => {
+        fetchMoodHistory();
+    }, []);
+
+    const fetchMoodHistory = async () => {
+        setError(null);
+        try {
+            const data = await apiFetch('/api/mood');
+            setMoodHistory(data);
+            if (data.length) {
+                setSelectedMood(data[data.length - 1].mood);
+            }
+        } catch (err) {
+            if (err.status === 401) {
+                onUnauthorized?.();
+                return;
+            }
+            setError(err.message);
+        }
+    };
+
+    const handleLogMood = async () => {
+        setError(null);
+        try {
+            await apiFetch('/api/mood', {
+                method: 'POST',
+                body: JSON.stringify({ mood: selectedMood }),
+            });
+            setShowConfirmation(true);
+            setTimeout(() => setShowConfirmation(false), 3000);
+            fetchMoodHistory();
+        } catch (err) {
+            if (err.status === 401) {
+                onUnauthorized?.();
+                return;
+            }
+            setError(err.message);
+        }
     };
 
     return (
@@ -24,6 +62,7 @@ const MoodTrackerPage = () => {
             <div className="mb-10 px-4">
                 <h2 className="text-[28px] font-bold text-gray-800 dark:text-gray-100 tracking-tight">Mood Tracker</h2>
                 <p className="text-gray-500 dark:text-gray-400 mt-2 text-[15px]">Take a moment to check in with yourself.</p>
+                {error && <p className="text-sm text-red-600 dark:text-red-400 mt-2">{error}</p>}
             </div>
 
             <div className="card shadow-[0_20px_50px_rgba(0,0,0,0.04)] dark:shadow-none border-0 bg-white/90 dark:bg-gray-800/90 transition-colors duration-300 backdrop-blur-xl self-center w-full max-w-2xl px-10 py-12">
@@ -62,6 +101,20 @@ const MoodTrackerPage = () => {
                             </div>
                         )}
                     </div>
+
+                    {moodHistory.length > 0 && (
+                        <div className="mt-8 w-full text-sm text-gray-500 dark:text-gray-400">
+                            <div className="font-semibold mb-2">Recent logs:</div>
+                            <ul className="space-y-1">
+                                {moodHistory.slice(-3).reverse().map((entry) => (
+                                    <li key={entry.id} className="flex items-center justify-between">
+                                        <span>{entry.mood}</span>
+                                        <span className="text-xs text-gray-400">{new Date(entry.timestamp).toLocaleString()}</span>
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+                    )}
                 </div>
             </div>
         </div>

@@ -7,7 +7,8 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "backend": "cd backend && python -m uvicorn backend.api:app --reload --port 8000"
   },
   "dependencies": {
     "lucide-react": "^0.577.0",

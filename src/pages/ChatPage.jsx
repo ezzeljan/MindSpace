@@ -1,16 +1,11 @@
 import React, { useState, useRef, useEffect } from 'react';
 import ChatBubble from '../components/ChatBubble';
 import MessageInput from '../components/MessageInput';
+import { apiFetch } from '../utils/api';
 
-const ChatPage = () => {
-    const [messages, setMessages] = useState([
-        {
-            id: 1,
-            text: "Hello. I'm MindSpace, your reflection assistant. How are you feeling today?",
-            isUser: false,
-        }
-    ]);
-
+const ChatPage = ({ onUnauthorized }) => {
+    const [messages, setMessages] = useState([]);
+    const [error, setError] = useState(null);
     const messagesEndRef = useRef(null);
 
     const scrollToBottom = () => {
@@ -18,23 +13,58 @@ const ChatPage = () => {
     };
 
     useEffect(() => {
+        fetchHistory();
+    }, []);
+
+    useEffect(() => {
         scrollToBottom();
     }, [messages]);
 
-    const handleSendMessage = (text) => {
-        // Add user message
-        const newUserMsg = { id: Date.now(), text, isUser: true };
-        setMessages((prev) => [...prev, newUserMsg]);
+    const fetchHistory = async () => {
+        setError(null);
+        try {
+            const data = await apiFetch('/api/chat/history');
+            setMessages(
+                data.map((item) => ({
+                    id: item.id,
+                    text: item.text,
+                    isUser: item.sender === 'user',
+                }))
+            );
+        } catch (err) {
+            if (err.status === 401) {
+                onUnauthorized?.();
+                return;
+            }
+            setError(err.message);
+        }
+    };
 
-        // Simulate assistant reply
-        setTimeout(() => {
-            const assistantReply = {
-                id: Date.now() + 1,
-                text: "Thank you for sharing that. Would you like to explore that feeling further?",
+    const handleSendMessage = async (text) => {
+        if (!text.trim()) return;
+
+        const userMsg = { id: Date.now(), text, isUser: true };
+        setMessages((prev) => [...prev, userMsg]);
+
+        try {
+            const { assistant } = await apiFetch('/api/chat/message', {
+                method: 'POST',
+                body: JSON.stringify({ text }),
+            });
+
+            const assistantMsg = {
+                id: assistant.id,
+                text: assistant.text,
                 isUser: false,
             };
-            setMessages((prev) => [...prev, assistantReply]);
-        }, 700);
+            setMessages((prev) => [...prev, assistantMsg]);
+        } catch (err) {
+            if (err.status === 401) {
+                onUnauthorized?.();
+                return;
+            }
+            setError(err.message);
+        }
     };
 
     return (
@@ -42,6 +72,7 @@ const ChatPage = () => {
             <div className="mb-6 px-2">
                 <h2 className="text-2xl font-semibold text-wellness-text dark:text-gray-100">Reflection Chat</h2>
                 <p className="text-gray-500 dark:text-gray-400 mt-1">A safe space to share your thoughts.</p>
+                {error && <p className="text-sm text-red-600 dark:text-red-400 mt-2">{error}</p>}
             </div>
 
             <div className="card flex-1 flex flex-col p-0 overflow-hidden bg-white/80 dark:bg-gray-800/80 transition-colors duration-300 backdrop-blur-sm">

@@ -1,7 +1,7 @@
 import React from 'react';
 import { MessageCircle, BarChart2, Wind, BookOpen, Moon, Sun, LogOut } from 'lucide-react';
 
-const Sidebar = ({ activePage, setActivePage, isDarkMode, setIsDarkMode }) => {
+const Sidebar = ({ activePage, setActivePage, isDarkMode, setIsDarkMode, onSignOut }) => {
     const navItems = [
         { id: 'chat', label: 'Chat', icon: <MessageCircle strokeWidth={1.5} /> },
         { id: 'mood', label: 'Mood Tracker', icon: <BarChart2 strokeWidth={1.5} /> },
@@ -41,7 +41,7 @@ const Sidebar = ({ activePage, setActivePage, isDarkMode, setIsDarkMode }) => {
                 </button>
 
                 <button
-                    onClick={() => setActivePage('landing')}
+                    onClick={onSignOut}
                     className="flex items-center justify-center gap-3 w-full py-3.5 rounded-2xl border border-red-50 dark:border-red-900/30 bg-red-50/50 dark:bg-red-900/10 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 hover:shadow-sm transition-all duration-300 font-medium text-[14px]"
                 >
                     <LogOut size={18} strokeWidth={2} />
