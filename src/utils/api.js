@@ -1,48 +1,25 @@
-const STORAGE_KEY = "mindspace_auth_token";
-
-export function getAuthToken() {
-  return typeof window !== "undefined" ? localStorage.getItem(STORAGE_KEY) : null;
-}
-
-export function setAuthToken(token) {
-  if (typeof window !== "undefined") {
-    localStorage.setItem(STORAGE_KEY, token);
-  }
-}
-
-export function clearAuthToken() {
-  if (typeof window !== "undefined") {
-    localStorage.removeItem(STORAGE_KEY);
-  }
-}
-
-export async function apiFetch(path, options = {}) {
+export const apiFetch = async (url, options = {}) => {
   const token = getAuthToken();
   const headers = {
-    "Content-Type": "application/json",
-    ...(options.headers ?? {}),
+    'Content-Type': 'application/json',
+    ...options.headers,
   };
-
   if (token) {
-    headers["Authorization"] = `Bearer ${token}`;
+    headers.Authorization = `Bearer ${token}`;
   }
-
-  const res = await fetch(path, {
+  const response = await fetch(url, {
     ...options,
     headers,
   });
-
-  if (res.status === 401) {
+  if (response.status === 401) {
     clearAuthToken();
-    const error = new Error("Unauthorized");
-    error.status = 401;
-    throw error;
+    window.location.reload();
   }
+  return response.json();
+};
 
-  if (!res.ok) {
-    const text = await res.text();
-    throw new Error(text || "API request failed");
-  }
+export const getAuthToken = () => localStorage.getItem('authToken');
 
-  return res.json();
-}
+export const setAuthToken = (token) => localStorage.setItem('authToken', token);
+
+export const clearAuthToken = () => localStorage.removeItem('authToken');

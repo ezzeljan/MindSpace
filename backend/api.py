@@ -3,11 +3,12 @@
 Provides endpoints used by the React frontend and the Streamlit admin UI.
 """
 
+import os
 from typing import Optional
 
 from fastapi import Depends, FastAPI, Header, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
+from pydantic import BaseModel, validator
 
 from .auth import (
     ACCESS_TOKEN_EXPIRE_MINUTES,
@@ -54,6 +55,18 @@ class Token(BaseModel):
 class AuthIn(BaseModel):
     email: str
     password: str
+
+    @validator('email')
+    def email_must_not_be_empty(cls, v):
+        if not v.strip():
+            raise ValueError('Email cannot be empty')
+        return v.strip()
+
+    @validator('password')
+    def password_must_not_be_empty(cls, v):
+        if not v.strip():
+            raise ValueError('Password cannot be empty')
+        return v
 
 
 class MessageIn(BaseModel):
@@ -116,8 +129,29 @@ def chat_history(user=Depends(_get_current_user)):
 @app.post("/api/chat/message")
 def send_chat_message(message: MessageIn, user=Depends(_get_current_user)):
     add_chat_message(user["id"], "user", message.text)
-    assistant_text = add_chat_message(user["id"], "assistant", generate_assistant_reply(message.text))
-    return {"assistant": assistant_text}
+    assistant_msg = add_chat_message(user["id"], "assistant", generate_assistant_reply(message.text))
+
+    response = {
+        "assistant": {
+            "id": assistant_msg["id"],
+            "text": assistant_msg["message"],
+            "sender": assistant_msg["sender"],
+            "timestamp": assistant_msg["timestamp"],
+        }
+    }
+    print(f"[chat] returning: {response}")
+    return response
+
+
+@app.get("/api/chat/debug")
+def chat_debug():
+    openai_key = os.environ.get("OPENAI_API_KEY")
+    key_exist = bool(openai_key)
+    return {
+        "openai_key_present": key_exist,
+        "openai_key_starts_with_sk": openai_key.startswith("sk-") if openai_key else False,
+        "system_message_example": "I am here to help you reflect on your feelings.",
+    }
 
 
 @app.get("/api/mood")

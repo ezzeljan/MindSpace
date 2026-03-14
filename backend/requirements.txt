@@ -9,3 +9,4 @@ python-jose[cryptography]
 sqlalchemy
 pymysql
 python-dotenv
+openai
