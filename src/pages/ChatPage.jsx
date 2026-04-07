@@ -27,7 +27,7 @@ const ChatPage = ({ onUnauthorized }) => {
             setMessages(
                 data.map((item) => ({
                     id: item.id,
-                    text: item.text,
+                    text: item.message,  //i made changes here item.text
                     isUser: item.sender === 'user',
                 }))
             );
@@ -54,7 +54,7 @@ const ChatPage = ({ onUnauthorized }) => {
 
             const assistantMsg = {
                 id: assistant.id,
-                text: assistant.text,
+                text: assistant.message, //made changes here as well .text
                 isUser: false,
             };
             setMessages((prev) => [...prev, assistantMsg]);
