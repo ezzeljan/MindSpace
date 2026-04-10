@@ -6,6 +6,6 @@ requests
 passlib[pbkdf2-sha256]
 python-jose[cryptography]
 sqlalchemy
-pymysql
+psycopg2-binary
 python-dotenv
 groq
