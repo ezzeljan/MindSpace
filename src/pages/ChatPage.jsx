@@ -54,7 +54,7 @@ const ChatPage = ({ onUnauthorized }) => {
 
             const assistantMsg = {
                 id: assistant.id,
-                text: assistant.message, //made changes here as well .text
+                text: assistant.text, //made changes here as well .text
                 isUser: false,
             };
             setMessages((prev) => [...prev, assistantMsg]);
