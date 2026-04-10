@@ -15,7 +15,15 @@ export const apiFetch = async (url, options = {}) => {
     clearAuthToken();
     window.location.reload();
   }
-  return response.json();
+    const data = await response.json();
+
+  if (!response.ok) {
+    const err = new Error(data?.detail || 'Request failed');
+    err.status = response.status;
+    throw err;
+  }
+
+  return data;
 };
 
 export const getAuthToken = () => localStorage.getItem('authToken');
