@@ -1,12 +1,11 @@
 fastapi
 uvicorn[standard]
-streamlit
 pydantic
 python-multipart
 requests
-passlib[bcrypt]
+passlib[pbkdf2-sha256]
 python-jose[cryptography]
 sqlalchemy
 pymysql
 python-dotenv
-openai
+groq
