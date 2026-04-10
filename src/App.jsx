@@ -9,10 +9,12 @@ import SignInPage from './pages/SignInPage'
 import { clearAuthToken, getAuthToken, setAuthToken } from './utils/api'
 
 function App() {
-  // We'll use 'landing' as the absolute default so the user sees it first
-  const [activePage, setActivePage] = useState('landing')
+  const [activePage, setActivePage] = useState(() => {
+    const token = getAuthToken()
+    return token ? 'chat' : 'landing'
+  })
   const [isDarkMode, setIsDarkMode] = useState(false)
-  const [token, setToken] = useState(null)
+  const [token, setToken] = useState(() => getAuthToken())
 
   useEffect(() => {
     if (isDarkMode) {
@@ -21,13 +23,6 @@ function App() {
       document.documentElement.classList.remove('dark')
     }
   }, [isDarkMode])
-
-  useEffect(() => {
-    const stored = getAuthToken()
-    if (stored) {
-      setToken(stored)
-    }
-  }, [])
 
   const handleSignIn = (newToken) => {
     setToken(newToken)
@@ -64,7 +59,7 @@ function App() {
 
   return (
     <div className={isDarkMode ? 'dark' : ''}>
-      {!isAuthenticated && (activePage === 'landing' || activePage === 'signin') ? (
+      {(activePage === 'landing' || activePage === 'signin') ? (
         renderPage()
       ) : (
         <div className="flex h-screen bg-wellness-gray dark:bg-gray-900 transition-colors duration-300 overflow-hidden font-sans text-wellness-text dark:text-gray-100">
@@ -75,7 +70,6 @@ function App() {
             setIsDarkMode={setIsDarkMode}
             onSignOut={handleSignOut}
           />
-
           <main className="flex-1 overflow-y-auto p-8 lg:p-12 relative">
             <div className="absolute top-0 left-0 w-full h-64 bg-gradient-to-b from-wellness-blue to-transparent dark:from-blue-900/20 dark:to-transparent opacity-50 pointer-events-none -z-10 transition-colors duration-300" />
             {renderPage()}
